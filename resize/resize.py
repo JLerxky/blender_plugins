@@ -17,11 +17,16 @@ class ResizeOperator(bpy.types.Operator):
         name="File Path",
         type=bpy.types.OperatorFileListElement,
     )
+    new_size: bpy.props.FloatProperty(
+        name="New Size",
+        description="缩放大小",
+        default=1.0,
+    )
 
     def execute(self, context):
         print(self.filepath)
         for file in self.files:
-            resize(self.directory, file.name)
+            resize(self.directory, file.name, self.new_size)
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -38,7 +43,7 @@ def register():
 def unregister():
     bpy.utils.unregister_class(ResizeOperator)
 
-def resize(filepath, filename):
+def resize(filepath, filename, new_size):
     # clean
     bpy.ops.object.select_all(action='DESELECT')
     
@@ -109,7 +114,7 @@ def resize(filepath, filename):
     bpy.ops.object.select_by_type(extend=False, type='MESH')
     bpy.ops.object.editmode_toggle()
     bpy.ops.transform.resize(
-        value=(2.0, 2.0, 2.0),
+        value=(new_size, new_size, new_size),
         orient_type='GLOBAL',
         orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)),
         orient_matrix_type='GLOBAL',
@@ -127,7 +132,7 @@ def resize(filepath, filename):
     bpy.ops.object.select_all(action='DESELECT')
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.export_scene.gltf(
-        filepath=filepath + "2x_" + filename
+        filepath=filepath + "{:.0f}x_".format(new_size) + filename
     )
     bpy.ops.object.select_all(action='DESELECT')
 
